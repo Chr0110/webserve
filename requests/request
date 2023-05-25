@@ -1,0 +1,11 @@
+POST /api/users HTTP/1.1
+Host: api.mozilla.org
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101 Firefox/91.0
+Content-Type: application/json
+Content-Length: 64
+
+{
+  "name": "John Doe",
+  "email": "johndoe@example.com",
+  "password": "secretpassword"
+}
