@@ -1,18 +1,24 @@
 #ifndef WEBSERV
 #define WEBSERV
 
-#include <string>
 #include <iostream>
+#include <map>
+#include <cstring>
+#include <fstream>
+#include <string>
+#include <locale>
 
-class request
+class req
 {
 	public:
-		int method_kind;
-		std::string method;
-		std::string host;
-		std::string user_agent;
-		std::string content_type;
-		std::string content_lenght;
+		std::map<std::string, std::string> header_map;
+		std::map<std::string, std::string> body_map;
+		void parse_request_head(std::string name);
+		void parse_request_body(std::string name, int line);
+		int there_is_bracket(std::string output);
+		void error();
+		std::string key;
+		std::string value;
 };
 
 #endif
