@@ -17,6 +17,44 @@ std::string remove_quotes(std::string string)
 	return string.substr(start, end - start + 1);
 };
 
+bool isNumber(const std::string& str) {
+	if (str.empty()) {
+		return false;
+	}
+
+	size_t i = 0;
+	if (str[i] == '-' || str[i] == '+') {
+		i++;
+	}
+
+	bool hasDigit = false;
+	bool hasDot = false;
+
+	for (; i < str.length(); i++) {
+		if (std::isdigit(str[i])) {
+			hasDigit = true;
+		} else if (str[i] == '.') {
+			if (hasDot) {
+				return false;
+			}
+			hasDot = true;
+		} else {
+			return false;
+		}
+	}
+
+	return hasDigit;
+};
+
+int the_end(std::string line)
+{
+	int i = line.length();
+	if (line[i] == '-' && line[i - 1] == '-')
+		return 1;
+	return 0;
+};
+
+
 void req::fill_body(int k, int j)
 {
 	int i = 0;
@@ -37,12 +75,14 @@ void req::fill_body(int k, int j)
 		std::string line;
 		if (inputFile.is_open())
 		{
-			while (std::getline(inputFile, line)) {
-				fileContent += line + "\n";
+			while (std::getline(inputFile, line))
+			{
+				if (!isNumber(line))
+					fileContent += line + "\n";
+			}
+			inputFile.close();
+			std::cout <<"-> "<< fileContent << " <-" << std::endl;
 		}
-		inputFile.close();
-		std::cout <<"-> "<< fileContent << " <-" << std::endl;
-	}
 	}
 	else if (k == 2)
 	{
@@ -57,7 +97,36 @@ void req::fill_body(int k, int j)
 	}
 	std::cout <<"-> "<< fileContent << " <-" << std::endl;
 	}
+	else if(k == 3)
+	{
+		int i = 0;
+		std::string fileContent;
+		std::string line;
+		if (inputFile.is_open())
+		{
+			while (std::getline(inputFile, line))
+			{
+				i = 0;
+				if (the_end(line))
+					break;
+				int result = line.compare(0, 4,"-------", 0, 4);
+				if (result != 0)
+						fileContent += line + "\n";
+				else
+				{
+					while(i < 2)
+					{
+						std::getline(inputFile, line);
+						i++;
+					}
+				}
+			}
+		}
+		inputFile.close();
+		std::cout <<"-> "<< fileContent << " <-" << std::endl;
+	}
 };
+
 void req::parse_request_head(std::string name)
 {
 	int i = 0;
@@ -68,7 +137,7 @@ void req::parse_request_head(std::string name)
 		this->error();
 	while(getline(inputFile, output))
 	{
-		  if (!output.length())
+		if (!output.length())
 		{
 			this->check_errors();
 			if (this->method == 2)
@@ -94,7 +163,7 @@ void req::parse_request_head(std::string name)
 		else if (!(this->key.compare("Content-Type")))
 		{
 			this->value = output.substr(i + 1);
-			int result = this->value.compare(0, 19,"multipart/form-data", 0, 19);
+			int result = this->value.compare(0, 19," multipart/form-data", 19);
 			if (result == 0)
 				this->body_kind = 3;
 		}
@@ -143,6 +212,8 @@ void req::check_errors()
 		else if ((!(it->first.compare("Transfer-Encoding"))) && this->method == 2)
 			this->flag = 1;
 		else if (!(it->first.compare("Content-Length") && this->method == 2))
+			this->flag = 1;
+		else if (!(it->first.compare("Content-Type") && this->method == 2))
 			this->flag = 1;
 		else if (this->method == 2)
 		{
