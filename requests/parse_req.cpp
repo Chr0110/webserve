@@ -17,131 +17,22 @@ std::string remove_quotes(std::string string)
 	return string.substr(start, end - start + 1);
 };
 
-bool isNumber(const std::string& str) {
-	if (str.empty()) {
-		return false;
-	}
-
-	size_t i = 0;
-	if (str[i] == '-' || str[i] == '+') {
-		i++;
-	}
-
-	bool hasDigit = false;
-	bool hasDot = false;
-
-	for (; i < str.length(); i++) {
-		if (std::isdigit(str[i])) {
-			hasDigit = true;
-		} else if (str[i] == '.') {
-			if (hasDot) {
-				return false;
-			}
-			hasDot = true;
-		} else {
-			return false;
-		}
-	}
-
-	return hasDigit;
-};
-
-int the_end(std::string line)
-{
-	int i = line.length();
-	if (line[i] == '-' && line[i - 1] == '-')
-		return 1;
-	return 0;
-};
-
-
-void req::fill_body(int k, int j)
-{
-	int i = 0;
-	std::string output;
-	std::ifstream inputFile("request.txt");
-	std::string body;
-	if (!inputFile.is_open())
-		this->error();
-	while(i < j)
-	{
-		getline(inputFile, output);
-		i++;
-	}
-	i = 0;
-	if (k == 1)
-	{
-		std::string fileContent;
-		std::string line;
-		if (inputFile.is_open())
-		{
-			while (std::getline(inputFile, line))
-			{
-				if (!isNumber(line))
-					fileContent += line + "\n";
-			}
-			inputFile.close();
-			std::cout <<"-> "<< fileContent << " <-" << std::endl;
-		}
-	}
-	else if (k == 2)
-	{
-		std::string fileContent	;
-		if (inputFile.is_open())
-		{
-			char c;
-			while (inputFile.get(c)) {
-				fileContent += c;
-		}
-		inputFile.close();
-	}
-	std::cout <<"-> "<< fileContent << " <-" << std::endl;
-	}
-	else if(k == 3)
-	{
-		int i = 0;
-		std::string fileContent;
-		std::string line;
-		if (inputFile.is_open())
-		{
-			while (std::getline(inputFile, line))
-			{
-				i = 0;
-				if (the_end(line))
-					break;
-				int result = line.compare(0, 4,"-------", 0, 4);
-				if (result != 0)
-						fileContent += line + "\n";
-				else
-				{
-					while(i < 2)
-					{
-						std::getline(inputFile, line);
-						i++;
-					}
-				}
-			}
-		}
-		inputFile.close();
-		std::cout <<"-> "<< fileContent << " <-" << std::endl;
-	}
-};
-
-void req::parse_request_head(std::string name)
+void req::parse_request_head(std::fstream& file)
 {
 	int i = 0;
 	int j = 0;
+	int first = 0;
 	std::string output;
-	std::ifstream inputFile(name);
-	if (!inputFile.is_open())
+	if (!file.is_open())
 		this->error();
-	while(getline(inputFile, output))
+	file.seekg(0);
+	while(getline(file, output))
 	{
-		if (!output.length())
+		if (output.length() == 1)
 		{
 			this->check_errors();
 			if (this->method == 2)
-				this->fill_body(this->body_kind, j);
+				this->fill_body(this->body_kind, j, file);
 			break;
 		}
 		i = 0;
@@ -150,12 +41,21 @@ void req::parse_request_head(std::string name)
 			i++;
 		this->key = output.substr(0, i);
 		this->key = remove_quotes(this->key);
-		if (!(this->key.compare("GET")))
-			this->method = 1;
-		else if (!(this->key.compare("POST")))
-			this->method = 2;
-		else if (!(this->key.compare("DELETE")))
-			this->method = 3;
+		if (first == 0)
+		{
+			if (!(this->key.compare("GET")))
+				this->method = 1;
+			else if (!(this->key.compare("POST")))
+				this->method = 2;
+			else if (!(this->key.compare("DELETE")))
+				this->method = 3;
+			else
+			{
+				this->status = 405;
+				this->error();
+			}
+			first = 1;
+		}
 		else if (!(this->key.compare("Transfer-Encoding")))
 			this->body_kind = 1;
 		else if (!(this->key.compare("Content-Length")))
@@ -167,9 +67,16 @@ void req::parse_request_head(std::string name)
 			if (result == 0)
 				this->body_kind = 3;
 		}
-		this->value = output.substr(i + 1);
-		this->value = remove_quotes(this->value);
-		this->header_map[this->key] = this->value;
+		try
+		{
+			this->value = output.substr(i + 1);//in this step i fill up the header key and value in map;
+		}
+		catch(const std::exception& e)
+		{
+			std::cerr << "";
+		}
+		this->value = remove_quotes(this->value);//in this step i fill up the header key and value in map;
+		this->header_map[this->key] = this->value;//in this step i fill up the header key and value in map;
 	}
 };
 
@@ -245,6 +152,7 @@ void req::check_errors()
 	}
 	if (this->flag != 1)
 	{
+		// printf("m here\n");
 		this->status = 400;
 		this->error();
 	}
