@@ -39,7 +39,7 @@ void req::fill_body(int k, int j, std::fstream& file)
 		std::vector<std::string> lines;
 		std::string line;
 		std::ofstream image;
-		image.open("image.png");
+		image.open("imagee.png");
 		if (file.is_open())
 		{
 			while (getline(file, line))
