@@ -40,6 +40,7 @@ class req
 		int body_kind;
 		std::string location;
 		void check_location();
+		void parse_head(const std::vector<std::string>& vec);
 };
 
 #endif

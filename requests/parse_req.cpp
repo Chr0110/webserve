@@ -152,7 +152,6 @@ void req::check_errors()
 	}
 	if (this->flag != 1)
 	{
-		// printf("m here\n");
 		this->status = 400;
 		this->error();
 	}

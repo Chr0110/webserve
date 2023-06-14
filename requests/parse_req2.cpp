@@ -32,49 +32,37 @@ void req::fill_body(int k, int j, std::fstream& file)
 		std::cout << output ;
 		i++;
 	}
-	i = 0;
 	if (k == 1)
 	{
-		size_t j = 0;
-		std::vector<std::string> lines;
-		std::string line;
-		std::ofstream image;
-		image.open("imagee.png");
-		if (file.is_open())
-		{
-			while (getline(file, line))
-			{
-				if (hexToDigit(line) == -1)
-					lines.push_back(line);
-			}
-			file.close();
-			while(j < lines.size())
-			{
-				image << lines[j];
-				j++;
-			}
-			file.close();
-			image.close();
-		}
-	}
-	else if (k == 2)
-	{
-		size_t j = 0;
 		std::vector<std::string> lines;
 		std::string line;
 		std::ofstream image;
 		image.open("image.png");
-		if (file.is_open())
-		{
-			while (getline(file, line))
-				lines.push_back(line);
-		}
+		std::vector<char> charVector;
+   		char c;
+   		while (file.get(c))
+   		    charVector.push_back(c);
 		file.close();
-		while(j < lines.size())
-		{
-			image << lines[j];
-			j++;
-		}
+		for (size_t i = 0; i < charVector.size(); ++i) {
+		        image << charVector[i];
+		    }
+		image.close();
+	}
+	else if (k == 2)
+	{
+		std::vector<std::string> lines;
+		std::string line;
+		std::ofstream image;
+		image.open("image.mp4");
+		std::vector<char> charVector;
+   		char c;
+   		while (file.get(c))
+   		    charVector.push_back(c);
+		file.close();
+		for (size_t i = 0; i < charVector.size(); ++i) {
+		        image << charVector[i];
+		    }
+		image.close();
 	}
 	else if(k == 3)
 	{
@@ -102,6 +90,5 @@ void req::fill_body(int k, int j, std::fstream& file)
 			}
 		}
 		file.close();
-		// std::cout <<"-> "<< fileContent << " <-" << std::endl;
 	}
 };

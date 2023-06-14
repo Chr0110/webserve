@@ -1,6 +1,7 @@
 #include "webserv.hpp"
 #define PORT 8087
 
+
 int main(int ac, char **av)
 {
 	if (ac == 2)
@@ -47,14 +48,13 @@ int main(int ac, char **av)
 				std::string b;
 				std::vector<char> body;
 				while (valread > 0) {
-				    valread = read(new_socket, buffer, 300000);
-				    for (int i = 0; i < valread; ++i) {
-				        body.push_back(buffer[i]);
-				    }
+					valread = read(new_socket, buffer, 300000);
+					for (int i = 0; i < valread; ++i)
+						body.push_back(buffer[i]);
 				}
-				if (file.is_open()) {
-				    file.write(&body[0], body.size());
-				}
+				// parse_head(body);
+				if (file.is_open())
+					file.write(&body[0], body.size());
 				break;
 			}
 			rq.parse_request_head(file);
@@ -63,4 +63,4 @@ int main(int ac, char **av)
 	else
 		std::cout << "Error: could not open file" << std::endl;
 	return 0;
-	}
+}
