@@ -7,15 +7,15 @@ int the_end(std::string line)
 	return 0;
 };
 int hexToDigit(const std::string& hexChar) {
-    if (hexChar >= "0" && hexChar <= "9") {
-        return hexChar[0] - '0';
-    } else if (hexChar >= "A" && hexChar <= "F") {
-        return hexChar[0] - 'A' + 10;
-    } else if (hexChar >= "a" && hexChar <= "f") {
-        return hexChar[0] - 'a' + 10;
-    }
+	if (hexChar >= "0" && hexChar <= "9") {
+		return hexChar[0] - '0';
+	} else if (hexChar >= "A" && hexChar <= "F") {
+		return hexChar[0] - 'A' + 10;
+	} else if (hexChar >= "a" && hexChar <= "f") {
+		return hexChar[0] - 'a' + 10;
+	}
 
-    return -1; // Invalid hex character
+	return -1;
 }
 
 void req::fill_body(int k, int j, std::fstream& file)
@@ -37,15 +37,14 @@ void req::fill_body(int k, int j, std::fstream& file)
 		std::vector<std::string> lines;
 		std::string line;
 		std::ofstream image;
-		image.open("image.png");
-		std::vector<char> charVector;
-   		char c;
-   		while (file.get(c))
-   		    charVector.push_back(c);
+		image.open("image.mp4");
+		char c;
+		while (file.get(c))
+			this->last_body.push_back(c);
 		file.close();
-		for (size_t i = 0; i < charVector.size(); ++i) {
-		        image << charVector[i];
-		    }
+		for (size_t i = 0; i < this->last_body.size(); ++i) {
+				image << this->last_body[i];
+			}
 		image.close();
 	}
 	else if (k == 2)
@@ -53,42 +52,29 @@ void req::fill_body(int k, int j, std::fstream& file)
 		std::vector<std::string> lines;
 		std::string line;
 		std::ofstream image;
-		image.open("image.mp4");
-		std::vector<char> charVector;
-   		char c;
-   		while (file.get(c))
-   		    charVector.push_back(c);
+		image.open("image.png");
+		char c;
+		while (file.get(c))
+			this->last_body.push_back(c);
 		file.close();
-		for (size_t i = 0; i < charVector.size(); ++i) {
-		        image << charVector[i];
-		    }
+		for (size_t i = 0; i < this->last_body.size(); ++i) {
+				image << this->last_body[i];
+			}
 		image.close();
 	}
 	else if(k == 3)
 	{
-		int i = 0;
-		std::string fileContent;
+		std::vector<std::string> lines;
 		std::string line;
-		if (file.is_open())
-		{
-			while (std::getline(file, line))
-			{
-				i = 0;
-				if (the_end(line))
-					break;
-				int result = line.compare(0, 4,"-------", 0, 4);
-				if (result != 0)
-						fileContent += line + "\n";
-				else
-				{
-					while(i < 2)
-					{
-						std::getline(file, line);
-						i++;
-					}
-				}
-			}
-		}
+		std::ofstream image;
+		image.open(this->header_map["POST"]);
+		char c;
+		while (file.get(c))
+			this->last_body.push_back(c);
 		file.close();
+		for (size_t i = 0; i < this->last_body.size(); ++i) {
+				image << this->last_body[i];
+			}
+		image.close();
 	}
 };

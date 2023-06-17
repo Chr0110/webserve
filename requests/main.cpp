@@ -12,6 +12,7 @@ int main(int ac, char **av)
 			int server_fd, new_socket;
 			long valread;
 			req rq;
+			rq.status = 200;
 			std::fstream file("request.txt",  std::ios::in | std::ios::out | std::ios::trunc);
 			struct sockaddr_in address;
 			int addrlen = sizeof(address);
@@ -58,6 +59,10 @@ int main(int ac, char **av)
 				break;
 			}
 			rq.parse_request_head(file);
+			if (rq.status == 200)
+				printf("no error\n");
+			else
+				printf("there is an error %d\n", rq.status);
 		}
 	}
 	else

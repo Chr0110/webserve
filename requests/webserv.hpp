@@ -35,12 +35,12 @@ class req
 		std::string key;
 		std::string value;
 		int method;
-		int status;
+		int status ;
 		int flag;
 		int body_kind;
 		std::string location;
-		void check_location();
-		void parse_head(const std::vector<std::string>& vec);
+		bool file_exists(const std::string& filePath);
+		std::vector<char> last_body;
 };
 
 #endif

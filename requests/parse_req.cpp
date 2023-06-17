@@ -100,14 +100,13 @@ int req::not_allowed_char(std::string uri)
 	for (std::string::const_iterator it = uri.begin(); it != uri.end(); ++it) 
 	{
 		if (allowedCharacters.find(*it) == std::string::npos)
-		{
 			return 1;
-		}
 	}
 	return 0;
 };
 void req::check_errors()
 {
+	int i = 0;
 	std::map<std::string, std::string>::iterator it;
 	for (it = this->header_map.begin(); it != this->header_map.end(); ++it)
 	{
@@ -122,31 +121,46 @@ void req::check_errors()
 			this->flag = 1;
 		else if (!(it->first.compare("Content-Type") && this->method == 2))
 			this->flag = 1;
-		else if (this->method == 2)
+		else if (!(it->first.compare("POST")))
 		{
-			if (!(it->first.compare("POST")))
+			i = 0;
+			while(it->second[i] != ' ')
+				i++;
+			this->location = it->second.substr(0, i);
+			if (!file_exists(this->location))
+				this->status = 404;
+			if (this->not_allowed_char(it->second))
 			{
-				if (this->not_allowed_char(it->second))
-				{
-					this->status = 400;
-					this->error();
-				}
+				this->status = 400;
+				this->error();
 			}
-			else if (!(it->first.compare("GET")))
+		}
+		else if (!(it->first.compare("GET")))
+		{
+			i = 0;
+			while(it->second[i] != ' ')
+				i++;
+			this->location = it->second.substr(0, i);
+			if (!file_exists(this->location))
+				this->status = 404;
+			if (this->not_allowed_char(it->second))
 			{
-				if (this->not_allowed_char(it->second))
-				{
-					this->status = 400;
-					this->error();
-				}
+				this->status = 400;
+				this->error();
 			}
-			else if (!(it->first.compare("DELETE")))
+		}
+		else if (!(it->first.compare("DELETE")))
+		{
+			i = 0;
+			while(it->second[i] != ' ')
+				i++;
+			this->location = it->second.substr(0, i);
+			if (!file_exists(this->location))
+				this->status = 404;
+			if (this->not_allowed_char(it->second))
 			{
-				if (this->not_allowed_char(it->second))
-				{
-					this->status = 400;
-					this->error();
-				}
+				this->status = 400;
+				this->error();
 			}
 		}
 	}
