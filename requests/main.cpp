@@ -12,6 +12,7 @@ int main(int ac, char **av)
 			int server_fd, new_socket;
 			long valread;
 			req rq;
+			int j = 0;
 			rq.status = 200;
 			std::fstream file("request.txt",  std::ios::in | std::ios::out | std::ios::trunc);
 			struct sockaddr_in address;
@@ -53,16 +54,15 @@ int main(int ac, char **av)
 					for (int i = 0; i < valread; ++i)
 						body.push_back(buffer[i]);
 				}
-				// parse_head(body);
 				if (file.is_open())
 					file.write(&body[0], body.size());
 				break;
 			}
-			rq.parse_request_head(file);
-			if (rq.status == 200)
-				printf("no error\n");
+			rq.parse_request_head(file, &j);
+			if (rq.method == 2 && rq.status == 200)
+				rq.post(rq.body_kind, j, file);
 			else
-				printf("there is an error %d\n", rq.status);
+				std::cout << rq.status << std::endl;
 		}
 	}
 	else

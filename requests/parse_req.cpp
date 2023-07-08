@@ -17,26 +17,18 @@ std::string remove_quotes(std::string string)
 	return string.substr(start, end - start + 1);
 };
 
-void req::parse_request_head(std::fstream& file)
+void req::parse_request_head(std::fstream& file, int *j)
 {
 	int i = 0;
-	int j = 0;
 	int first = 0;
 	std::string output;
 	if (!file.is_open())
 		this->error();
 	file.seekg(0);
-	while(getline(file, output))
+	while(getline(file, output) && output.length() > 1)
 	{
-		if (output.length() == 1)
-		{
-			this->check_errors();
-			if (this->method == 2)
-				this->fill_body(this->body_kind, j, file);
-			break;
-		}
 		i = 0;
-		j++;
+		(*j)++;
 		while(output[i] != ' ' && output[i] != ':')
 			i++;
 		this->key = output.substr(0, i);
@@ -78,6 +70,7 @@ void req::parse_request_head(std::fstream& file)
 		this->value = remove_quotes(this->value);//in this step i fill up the header key and value in map;
 		this->header_map[this->key] = this->value;//in this step i fill up the header key and value in map;
 	}
+	this->check_errors();
 };
 
 int req::not_allowed_char(std::string uri)
@@ -127,8 +120,8 @@ void req::check_errors()
 			while(it->second[i] != ' ')
 				i++;
 			this->location = it->second.substr(0, i);
-			if (!file_exists(this->location))
-				this->status = 404;
+			// if (!file_exists(this->location))
+				// this->status = 404;
 			if (this->not_allowed_char(it->second))
 			{
 				this->status = 400;
@@ -141,8 +134,8 @@ void req::check_errors()
 			while(it->second[i] != ' ')
 				i++;
 			this->location = it->second.substr(0, i);
-			if (!file_exists(this->location))
-				this->status = 404;
+			// if (!file_exists(this->location))
+				// this->status = 404;
 			if (this->not_allowed_char(it->second))
 			{
 				this->status = 400;
@@ -155,8 +148,8 @@ void req::check_errors()
 			while(it->second[i] != ' ')
 				i++;
 			this->location = it->second.substr(0, i);
-			if (!file_exists(this->location))
-				this->status = 404;
+			// if (!file_exists(this->location))
+				// this->status = 404;
 			if (this->not_allowed_char(it->second))
 			{
 				this->status = 400;

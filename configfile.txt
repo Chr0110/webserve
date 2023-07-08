@@ -1,0 +1,12 @@
+
+server {
+    host: localhost;
+    listen 80;
+    server_name example.com;
+
+
+    location / {
+        upload : directory name;
+        root /var/www/html;
+    }
+}

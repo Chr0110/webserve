@@ -28,10 +28,10 @@ class req
 		void check_errors();
 		std::map<std::string, std::string> header_map;
 		std::map<std::string, std::string> body_map;
-		void parse_request_head(std::fstream& file);
+		void parse_request_head(std::fstream& file, int *j);
 		int not_allowed_char(std::string uri);
 		void error();
-		void fill_body(int k, int j, std::fstream& file);
+		void post(int k, int j, std::fstream& file);
 		std::string key;
 		std::string value;
 		int method;
