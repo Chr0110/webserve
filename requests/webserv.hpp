@@ -41,6 +41,7 @@ class req
 		std::string location;
 		bool file_exists(const std::string& filePath);
 		std::vector<char> last_body;
+		std::string extention;
 };
 
 #endif

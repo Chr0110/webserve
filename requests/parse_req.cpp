@@ -102,6 +102,17 @@ int req::not_allowed_char(std::string uri)
 	}
 	return 0;
 };
+
+std::string get_extention(std::string s)
+{
+	int i = 0;
+	std::string ext;
+	while (s[i] != '/')
+		i++;
+	ext = s.substr(i + 1, s.size());
+	return (ext);
+};
+
 void req::check_errors()
 {
 	int i = 0;
@@ -113,7 +124,10 @@ void req::check_errors()
 		else if (!(it->first.compare("Content-Length") && this->method == 2))
 			this->flag = 1;
 		else if (!(it->first.compare("Content-Type") && this->method == 2))
+		{
+			this->extention = get_extention(it->second);
 			this->flag = 1;
+		}
 		else if (!(it->first.compare("POST")))
 		{
 			i = 0;

@@ -34,14 +34,14 @@ void req::post(int k, int j, std::fstream& file)
 	}
 	if (k == 1)
 	{
+		char c;
 		getline(file, output);
 		std::vector<std::string> lines;
 		std::string line;
 		std::ofstream filee;
 		std::string kk = "file.";
-		kk += "mp4";
-		filee.open(kk);
-		char c;
+		kk += this->extention;
+		filee.open("../uploads/" + kk);
 		while (file.get(c))
 			this->last_body.push_back(c);
 		file.close();
@@ -57,8 +57,8 @@ void req::post(int k, int j, std::fstream& file)
 		std::string line;
 		std::ofstream filee;
 		std::string kk = "file.";
-		kk += "mp4";
-		filee.open(kk);
+		kk += this->extention;
+		filee.open("../uploads/" + kk);
 		char c;
 		while (file.get(c))
 			this->last_body.push_back(c);
