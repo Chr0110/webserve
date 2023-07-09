@@ -49,7 +49,12 @@ void req::parse_request_head(std::fstream& file, int *j)
 			first = 1;
 		}
 		else if (!(this->key.compare("Transfer-Encoding")))
-			this->body_kind = 1;
+		{
+			this->value = output.substr(i + 1);
+			int result = this->value.compare(0, 7," chunked", 7);
+			if (result == 0)
+				this->body_kind = 1;
+		}
 		else if (!(this->key.compare("Content-Length")))
 			this->body_kind = 2;
 		else if (!(this->key.compare("Content-Type")))
@@ -61,7 +66,7 @@ void req::parse_request_head(std::fstream& file, int *j)
 		}
 		try
 		{
-			this->value = output.substr(i + 1);//in this step i fill up the header key and value in map;
+			this->value = output.substr(i + 1);
 		}
 		catch(const std::exception& e)
 		{
@@ -103,12 +108,7 @@ void req::check_errors()
 	std::map<std::string, std::string>::iterator it;
 	for (it = this->header_map.begin(); it != this->header_map.end(); ++it)
 	{
-		if (!(it->first.compare("Transfer-Encoding")) && it->second.compare("chunked"))
-		{
-			this->status = 501;
-			this->error();
-		}
-		else if ((!(it->first.compare("Transfer-Encoding"))) && this->method == 2)
+		if ((!(it->first.compare("Transfer-Encoding"))) && this->method == 2)
 			this->flag = 1;
 		else if (!(it->first.compare("Content-Length") && this->method == 2))
 			this->flag = 1;
@@ -120,8 +120,6 @@ void req::check_errors()
 			while(it->second[i] != ' ')
 				i++;
 			this->location = it->second.substr(0, i);
-			// if (!file_exists(this->location))
-				// this->status = 404;
 			if (this->not_allowed_char(it->second))
 			{
 				this->status = 400;
@@ -134,8 +132,6 @@ void req::check_errors()
 			while(it->second[i] != ' ')
 				i++;
 			this->location = it->second.substr(0, i);
-			// if (!file_exists(this->location))
-				// this->status = 404;
 			if (this->not_allowed_char(it->second))
 			{
 				this->status = 400;
@@ -148,8 +144,6 @@ void req::check_errors()
 			while(it->second[i] != ' ')
 				i++;
 			this->location = it->second.substr(0, i);
-			// if (!file_exists(this->location))
-				// this->status = 404;
 			if (this->not_allowed_char(it->second))
 			{
 				this->status = 400;

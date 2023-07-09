@@ -20,7 +20,6 @@ int hexToDigit(const std::string& hexChar) {
 
 void req::post(int k, int j, std::fstream& file)
 {
-	k = 0;
 	int i = 0;
 	std::string output;
 	std::string body;
@@ -33,22 +32,43 @@ void req::post(int k, int j, std::fstream& file)
 		std::cout << output ;
 		i++;
 	}
-	// if (!std::strncmp(this->location.c_str(), "/upload", 7))
-	// {
+	if (k == 1)
+	{
+		getline(file, output);
 		std::vector<std::string> lines;
 		std::string line;
-		std::ofstream image;
-		image.open("image.mp4");
+		std::ofstream filee;
+		std::string kk = "file.";
+		kk += "mp4";
+		filee.open(kk);
 		char c;
 		while (file.get(c))
 			this->last_body.push_back(c);
 		file.close();
 		for (size_t i = 0; i < this->last_body.size(); ++i) {
-				image << this->last_body[i];
+				filee << this->last_body[i];
 			}
-		image.close();
+		filee.close();
 		this->status = 201;
-	// }
+	}
+	if (k == 2)
+	{
+		std::vector<std::string> lines;
+		std::string line;
+		std::ofstream filee;
+		std::string kk = "file.";
+		kk += "mp4";
+		filee.open(kk);
+		char c;
+		while (file.get(c))
+			this->last_body.push_back(c);
+		file.close();
+		for (size_t i = 0; i < this->last_body.size(); ++i) {
+				filee << this->last_body[i];
+			}
+		filee.close();
+		this->status = 201;
+	}
 
 	// else if (k == 2 && !std::strncmp(this->location.c_str(), "/upload", 7))
 	// {

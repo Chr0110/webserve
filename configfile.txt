@@ -1,12 +1,13 @@
 
 server {
-    host: localhost;
     listen 80;
     server_name example.com;
 
 
-    location / {
+    location /test{
         upload : directory name;
-        root /var/www/html;
+        root ./www/
+        autoindex on 
+        allow POST
     }
 }
