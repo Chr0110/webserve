@@ -54,6 +54,8 @@ void req::parse_request_head(std::fstream& file, int *j)
 			int result = this->value.compare(0, 7," chunked", 7);
 			if (result == 0)
 				this->body_kind = 1;
+			else
+				this->status = 501;
 		}
 		else if (!(this->key.compare("Content-Length")))
 			this->body_kind = 2;
@@ -72,8 +74,9 @@ void req::parse_request_head(std::fstream& file, int *j)
 		{
 			std::cerr << "";
 		}
-		this->value = remove_quotes(this->value);//in this step i fill up the header key and value in map;
-		this->header_map[this->key] = this->value;//in this step i fill up the header key and value in map;
+		//std::cout << this->header_map["Content-Length"] << std::endl;
+		this->value = remove_quotes(this->value);
+		this->header_map[this->key] = this->value;
 	}
 	this->check_errors();
 };

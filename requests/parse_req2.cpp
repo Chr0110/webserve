@@ -18,6 +18,33 @@ int hexToDigit(const std::string& hexChar) {
 	return -1;
 }
 
+int hexToDecimal(std::string& hexString) {
+    int decimal = 0;
+    int power = 0;
+
+    for (int i = hexString.length() - 2; i >= 0; i--) {
+        char currentChar = hexString[i];
+    	int digitValue;
+
+        if (currentChar >= '0' && currentChar <= '9') {
+            digitValue = currentChar - '0';
+        }
+        else if (currentChar >= 'A' && currentChar <= 'F') {
+            digitValue = currentChar - 'A' + 10;
+        }
+        else if (currentChar >= 'a' && currentChar <= 'f') {
+            digitValue = currentChar - 'a' + 10;
+        }
+        else {
+            std::cerr << "Invalid hexadecimal digit: " << currentChar << std::endl;
+            return 0;
+        }
+        decimal += digitValue * static_cast<int>(std::pow(16, power));
+        power++;
+    }
+    return decimal;
+};
+
 void req::post(int k, int j, std::fstream& file)
 {
 	int i = 0;
@@ -29,30 +56,51 @@ void req::post(int k, int j, std::fstream& file)
 	while(i <= j)
 	{
 		getline(file, output);
-		std::cout << output ;
 		i++;
 	}
 	if (k == 1)
 	{
 		char c;
-		getline(file, output);
+		std::string output;
 		std::vector<std::string> lines;
 		std::string line;
 		std::ofstream filee;
 		std::string kk = "file.";
 		kk += this->extention;
 		filee.open("../uploads/" + kk);
-		while (file.get(c))
-			this->last_body.push_back(c);
-		file.close();
-		for (size_t i = 0; i < this->last_body.size(); ++i) {
-				filee << this->last_body[i];
+		int length = 1;
+		while(length != 0)
+		{
+			try
+			{
+				getline(file, output);
+				int length = hexToDecimal(output);
+				std::cout << output << std::endl;
+				if (length == 0)
+					break;
+				for(int i = 0; i < length; i++)
+				{
+					file.get(c);
+					this->last_body.push_back(c);
+				}
+				file.get(c);
+				file.get(c);
 			}
+			catch(const std::exception& e)
+			{
+				std::cerr << "" << '\n';
+			}
+			
+		}
+		file.close();
+		for (size_t i = 0; i < this->last_body.size(); ++i)
+			filee << this->last_body[i];
 		filee.close();
 		this->status = 201;
 	}
 	if (k == 2)
 	{
+		size_t length = stoi(this->header_map["Content-Length"]);
 		std::vector<std::string> lines;
 		std::string line;
 		std::ofstream filee;
@@ -63,7 +111,7 @@ void req::post(int k, int j, std::fstream& file)
 		while (file.get(c))
 			this->last_body.push_back(c);
 		file.close();
-		for (size_t i = 0; i < this->last_body.size(); ++i) {
+		for (size_t i = 0; i < length; ++i) {
 				filee << this->last_body[i];
 			}
 		filee.close();
