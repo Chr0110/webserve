@@ -46,6 +46,9 @@ class req
 		std::string extention;
 		int init;
 		int check_rn(std::string body);
+		int wait_for_zero(std::string body);
+		int wait_for_size(std::string body);
+		int delim;
 };
 
 #endif

@@ -1,5 +1,11 @@
 #include "webserv.hpp"
 
+void req::error()
+{
+	std::cout << "Error" << this->status << std::endl;
+	exit(0);
+};
+
 int req::not_allowed_char(std::string uri)
 {
 	int i = 0;
@@ -35,72 +41,123 @@ std::string get_extention(std::string s)
 	return (ext);
 };
 
+void req::parse_header(std::string body)
+{
+	int j = 0;
+	int first = 0;
+	std::string key;
+	std::string value;
+	while (body[j])
+	{
+		if(body[j] == '\r' && body[j + 1] == '\n' && body[j + 2] == '\r' && body[j + 3] == '\n')
+			break;
+		while (body[j] != ' ' && body[j] != ':')
+		{
+			if (body[j] == '\n')
+				j++;
+			key.push_back(body[j]);
+			j++;
+		}
+		if (first == 0)
+		{
+			if (!(key.compare("GET")))
+				this->method = 1;
+			else if (!(key.compare("POST")))
+				this->method = 2;
+			else if (!(key.compare("DELETE")))
+				this->method = 3;
+			else
+			{
+				this->status = 405;
+				this->error();
+			}
+			first = 1;
+		}
+		while (body[j + 1] != '\r')
+		{
+			value.push_back(body[j + 2]);
+			j++;
+		}
+		this->key = key;
+		this->value = value;
+		this->header_map[this->key] = this->value;
+		while (key.size() > 0)
+			key.pop_back();
+		while (value.size() > 0)
+			value.pop_back();
+		j++;
+	}
+	this->delim = j;
+	this->check_errors();
+};
+
+int req::check_rn(std::string body)
+{
+	int j = 0;
+	while (body[j])
+	{
+		if(body[j] == '\r' && body[j + 1] == '\n' && body[j + 2] == '\r' && body[j + 3] == '\n')
+			return 1;
+		j++;
+	}
+	return 0;
+};
+
 void req::check_errors()
 {
-	int i = 0;
-	std::map<std::string, std::string>::iterator it;
-	for (it = this->header_map.begin(); it != this->header_map.end(); ++it)
+	if (this->method == 1)
 	{
-		if ((!(it->first.compare("Transfer-Encoding"))) && this->method == 2)
-		{
-			if (it->second.compare("chunked"))
-			{
-				this->body_kind = 1;
-				this->flag = 1;
-			}
-			else
-				this->status = 501;
-		}
-		else if (!(it->first.compare("Content-Length") && this->method == 2))
+		int i = 0;
+		std::string location1 = this->header_map["GET"].c_str();
+		while (location1[i] != ' ')
+			i++;
+		this->location = location1.substr(0, i);
+		if (this->not_allowed_char(this->header_map["GET"].c_str()))
+			this->status = 400;
+	}
+	if (this->method == 2)
+	{
+		int i = 0;
+		std::string location1 = this->header_map["POST"].c_str();
+		while (location1[i] != ' ')
+			i++;
+		this->location = location1.substr(0, i);
+		if (this->not_allowed_char(this->header_map["POST"].c_str()))
+			this->status = 400;
+	}
+	if (this->method == 3)
+	{
+		int i = 0;
+		std::string location1 = this->header_map["DELETE"].c_str();
+		while (location1[i] != ' ')
+			i++;
+		this->location = location1.substr(0, i);
+		if (this->not_allowed_char(this->header_map["DELETE"].c_str()))
+			this->status = 400;
+	}
+	if (this->header_map["\rContent-Length"].size() > 0 && this->method == 2)
+	{
+		this->body_kind = 1;
+		this->flag = 1;
+	}
+	if (this->header_map["\rTransfer-Encoding"].size() > 0 && this->method == 2)
+	{
+		if (strcmp(this->header_map["\rTransfer-Encoding"].c_str(), "chunked\r") != 0)
+			this->status = 501;
+		else
 		{
 			this->body_kind = 2;
 			this->flag = 1;
 		}
-		else if (!(it->first.compare("Content-Type") && this->method == 2))
-		{
-			this->extention = get_extention(it->second);
-			this->flag = 1;
-		}
-		else if (!(it->first.compare("POST")))
-		{
-			i = 0;
-			while(it->second[i] != ' ')
-				i++;
-			this->location = it->second.substr(0, i);
-			if (this->not_allowed_char(it->second))
-			{
-				this->status = 400;
-				this->error();
-			}
-		}
-		else if (!(it->first.compare("GET")))
-		{
-			i = 0;
-			while(it->second[i] != ' ')
-				i++;
-			this->location = it->second.substr(0, i);
-			if (this->not_allowed_char(it->second))
-			{
-				this->status = 400;
-				this->error();
-			}
-		}
-		else if (!(it->first.compare("DELETE")))
-		{
-			i = 0;
-			while(it->second[i] != ' ')
-				i++;
-			this->location = it->second.substr(0, i);
-			if (this->not_allowed_char(it->second))
-			{
-				this->status = 400;
-				this->error();
-			}
-		}
+	}
+	if (this->header_map["\rContent-Type"].size() > 0)
+	{
+		this->extention = get_extention(this->header_map["\rContent-Type"].c_str());
+		this->flag = 1;
 	}
 	if (this->flag != 1)
 	{
-		this->status = 400;
+		std::cout << this->flag << std::endl;
 		this->error();
 	}
 };

@@ -1,70 +1,35 @@
 #include "webserv.hpp"
 #define PORT 8087
 
-
-void req::parse_header(std::string body)
-{
-	int j = 0;
-	int first = 0;
-	std::string key;
-	std::string value;
-	while (body[j])
-	{
-		if(body[j] == '\r' && body[j + 1] == '\n' && body[j + 2] == '\r' && body[j + 3] == '\n')
-			break;
-		while (body[j] != ' ' && body[j] != ':')
-		{
-			key.push_back(body[j]);
-			j++;
-		}
-		if (first == 0)
-		{
-			if (!(key.compare("GET")))
-				this->method = 1;
-			else if (!(key.compare("POST")))
-				this->method = 2;
-			else if (!(key.compare("DELETE")))
-				this->method = 3;
-			else
-			{
-				this->status = 405;
-				this->error();
-			}
-			first = 1;
-		}
-		while (body[j + 1] != '\r')
-		{
-			value.push_back(body[j + 2]);
-			j++;
-		}
-		this->key = key;
-		this->value = value;
-		this->header_map[this->key] = this->value;
-		while (key.size() > 0)
-			key.pop_back();
-		while (value.size() > 0)
-			value.pop_back();
-		j++;
-	}
-	this->check_errors();
-};
-
-int req::check_rn(std::string body)
+int req::wait_for_zero(std::string body)
 {
 	int j = 0;
 	while (body[j])
 	{
-		if(body[j] == '\r' && body[j + 1] == '\n' && body[j + 2] == '\r' && body[j + 3] == '\n')
+		if(body[j] == '0'  && body[j + 1] == '\r' && body[j + 2] == '\n' && body[j + 3] == '\r' && body[j + 4] == '\n')
 			return 1;
 		j++;
 	}
-	return 0;
+	return (0);
 };
 
+int req::wait_for_size(std::string body)
+{
+	int j = this->delim;
+	while(body[j])
+		j++;
+	std::cout << j << "<---"<< std::endl;
+	std::cout << stoi(this->header_map["\rContent-Length"]) << std::endl;
+	if (j >= stoi(this->header_map["\rContent-Length"]))
+		return 1;
+	else
+		return 0;
+};
 int main(int ac, char **av)
 {
 	if (ac == 2)
 	{
+		int k = 0;
 		if (!std::strcmp(av[1], "request.txt"))
 		{
 			std::string body;
@@ -113,25 +78,35 @@ int main(int ac, char **av)
 					valread = read(new_socket, buffer, 1024);
 					for (int i = 0; i < valread; ++i)
 						body.push_back(buffer[i]);
-					if (check_rn(body))
+					if (rq.check_rn(body))
 					{
-						rq.parse_header(body);
-						// if (rq.body_kind == 1)
-						// {
-							// if (wait_for_zero(body))
-								// this->init = 1;
-							// else
-								// this->init = 0;
-						// }
-						// else if (rq.body_kind == 2)
-						// {
-							// if (wait_for_rn(body))
-								// this->init = 1;
-							// else
-								// this->init = 0;
-						// }
+						if (k == 0)
+						{
+							rq.parse_header(body);
+							k = 1;
+							if (rq.status != 200)
+								rq.init = -1;
+						}
 					}
-					break;
+					if (rq.body_kind == 2 && rq.init != -1)
+					{
+						std::cout << rq.wait_for_zero(body) << std::endl;
+						if(!rq.wait_for_zero(body))
+							rq.init = 0;
+						else
+							rq.init = 1;
+					}
+					else if (rq.body_kind == 1)
+					{
+						if (rq.wait_for_size(body))
+						{
+							printf("m here\n");
+							break;
+							rq.init = 1;
+						}
+						else
+							rq.init = 0;
+					}
 				}
 				if (file.is_open())
 					file.write(&body[0], body.size());
