@@ -45,7 +45,7 @@ int hexToDecimal(std::string& hexString) {
     return decimal;
 };
 
-void req::post(int k, int j, std::fstream& file)
+void req::upload(int k, int j, std::fstream& file)
 {
 	int i = 0;
 	std::string output;
@@ -75,7 +75,6 @@ void req::post(int k, int j, std::fstream& file)
 			{
 				getline(file, output);
 				int length = hexToDecimal(output);
-				std::cout << output << std::endl;
 				if (length == 0)
 					break;
 				for(int i = 0; i < length; i++)
@@ -117,36 +116,4 @@ void req::post(int k, int j, std::fstream& file)
 		filee.close();
 		this->status = 201;
 	}
-
-	// else if (k == 2 && !std::strncmp(this->location.c_str(), "/upload", 7))
-	// {
-	// 	std::vector<std::string> lines;
-	// 	std::string line;
-	// 	std::ofstream image;
-	// 	image.open("vid.mp4");
-	// 	char c;
-	// 	while (file.get(c))
-	// 		this->last_body.push_back(c);
-	// 	file.close();
-	// 	for (size_t i = 0; i < this->last_body.size(); ++i) {
-	// 			image << this->last_body[i];
-	// 		}
-	// 	image.close();
-	// 	this->status = 201;
-	// }
-	// else if(k == 3)
-	// {
-	// 	std::vector<std::string> lines;
-	// 	std::string line;
-	// 	std::ofstream image;
-	// 	image.open(this->header_map["POST"]);
-	// 	char c;
-	// 	while (file.get(c))
-	// 		this->last_body.push_back(c);
-	// 	file.close();
-	// 	for (size_t i = 0; i < this->last_body.size(); ++i) {
-	// 			image << this->last_body[i];
-	// 		}
-	// 	image.close();
-	// }
 };

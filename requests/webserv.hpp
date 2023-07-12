@@ -27,12 +27,13 @@ class req
 {
 	public:
 		void check_errors();
-		std::map<std::string, std::string> header_map;
+		std::map<std::string, std::string >header_map;
 		std::map<std::string, std::string> body_map;
 		void parse_request_head(std::fstream& file, int *j);
+		void parse_header(std::string body);
 		int not_allowed_char(std::string uri);
 		void error();
-		void post(int k, int j, std::fstream& file);
+		void upload(int k, int j, std::fstream& file);
 		std::string key;
 		std::string value;
 		int method;
@@ -43,6 +44,8 @@ class req
 		bool file_exists(const std::string& filePath);
 		std::vector<char> last_body;
 		std::string extention;
+		int init;
+		int check_rn(std::string body);
 };
 
 #endif
