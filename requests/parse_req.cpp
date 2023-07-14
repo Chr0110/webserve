@@ -135,9 +135,9 @@ void req::check_errors()
 		if (this->not_allowed_char(this->header_map["DELETE"].c_str()))
 			this->status = 400;
 	}
-	if (this->header_map["\rContent-Length"].size() > 0 && this->method == 2)
 	{
-		this->body_kind = 1;
+	if (this->header_map["\rContent-Length"].size() > 0 && this->method == 2)
+		this->body_kind = 2;
 		this->flag = 1;
 	}
 	if (this->header_map["\rTransfer-Encoding"].size() > 0 && this->method == 2)
@@ -146,7 +146,7 @@ void req::check_errors()
 			this->status = 501;
 		else
 		{
-			this->body_kind = 2;
+			this->body_kind = 1;
 			this->flag = 1;
 		}
 	}
