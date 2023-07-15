@@ -6,26 +6,24 @@
 
 void req::get_matched(char **av)
 {
-	int dif;
-	std::vector<ws::ServerData> servers;
-	servers = ws::parseConfigFile(av[1]);
-	for (std::vector <ws::ServerData>:: iterator it = servers.begin(); it != servers.end(); it++)
-	{
-		std::map<std::string, ws::LocationData>	locations = it->getLocations();
-		for (std::map<std::string, ws::LocationData>::iterator it2 = locations.begin(); it2 != locations.end(); it2++)
-		{
-			
-		}
-	}
+	std::cout << av[0] << std::endl;
+	std::cout << this->get_host() << std::endl;
 };
 int main(int ac, char **av)
 {
+	//void(av);
 	if (ac == 2)
 	{
 		int server_fd, new_socket;
 		long valread;
 		req rq;
-		rq.status = 200;
+		ws::ServerData server;
+		std::vector<ws::ServerData> servers;
+		servers = ws::parseConfigFile(av[1]);
+		rq = req(server);
+		rq.set_status(200);
+
+		/////////////////////////////////////////////////////////////////////////////////////////
 		std::fstream file("request.txt",  std::ios::in | std::ios::out | std::ios::trunc);
 		struct sockaddr_in address;
 		int addrlen = sizeof(address);
@@ -65,23 +63,24 @@ int main(int ac, char **av)
 				valread = read(new_socket, buffer, 1024);
 				for (int i = 0; i < valread; ++i)
 					rq.body.push_back(buffer[i]);
-				rq.set_init();
+				rq.set_inittt();
+				if (rq.get_init() == 1)
+					break;
 			}
 			if (file.is_open())
 				file.write(&rq.body[0], rq.body.size());
 			break;
 		}
 		rq.get_matched(av);
-		// if (rq.method == 2 && rq.status == 200)
-		// {
-		// 	if (check_upload_support(this->final_path))
-		// 		rq.upload(file);
-		// 	else
-		// 		rq.post();
-		// }
-		// else
-		// 	std::cout << rq.status << std::endl;
-		// }
+		if (rq.get_method() == 2 && rq.get_status() == 200)
+		{
+			//if (check_upload_support(this->final_path))
+				rq.upload(file);
+			//else
+			//	rq.post();
+		}
+		else
+			std::cout << rq.get_status() << std::endl;
 	}
 	else
 		std::cout << "Error: could not open file" << std::endl;

@@ -1,4 +1,14 @@
 #include "webserv.hpp"
+req::req(ws::ServerData &s) : method(2), status(200), body_kind(1), init(0)
+{
+ 	this->host = s.getHost();
+ 	this->port = s.getPort();
+ 	this->serverName = s.getServerName();
+ 	this->bodySizeLimit = s.getBodySizeLimit();
+ 	this->defaultErrorPages = s.getDefaultErrorPages();
+ 	this->locations = s.getLocations();
+ 	this->path = s.getPath();
+}
 
 void req::error()
 {
@@ -18,10 +28,7 @@ int req::not_allowed_char(std::string uri)
 	}
 	uri = uri.substr(0, i);
 	if (uri.length() >= 2048)
-	{
-		this->status = 414;
-		this->error();
-	}
+		this->set_status(414);
 	const std::string allowedCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~:/?#[]@!$&'()*+,;=";
 	for (std::string::const_iterator it = uri.begin(); it != uri.end(); ++it) 
 	{
@@ -61,16 +68,13 @@ void req::parse_header(std::string body)
 		if (first == 0)
 		{
 			if (!(key.compare("GET")))
-				this->method = 1;
+				this->set_method(1);
 			else if (!(key.compare("POST")))
-				this->method = 2;
+				this->set_method(2);
 			else if (!(key.compare("DELETE")))
-				this->method = 3;
+				this->set_method(3);
 			else
-			{
-				this->status = 405;
-				this->error();
-			}
+				this->set_status(405);
 			first = 1;
 		}
 		while (body[j + 1] != '\r')
@@ -105,7 +109,7 @@ int req::check_rn(std::string body)
 
 void req::check_errors()
 {
-	if (this->method == 1)
+	if (this->get_method() == 1)
 	{
 		int i = 0;
 		std::string location1 = this->header_map["GET"].c_str();
@@ -113,9 +117,9 @@ void req::check_errors()
 			i++;
 		this->location = location1.substr(0, i);
 		if (this->not_allowed_char(this->header_map["GET"].c_str()))
-			this->status = 400;
+			this->set_status(400);
 	}
-	if (this->method == 2)
+	if (this->get_method() == 2)
 	{
 		int i = 0;
 		std::string location1 = this->header_map["POST"].c_str();
@@ -123,9 +127,10 @@ void req::check_errors()
 			i++;
 		this->location = location1.substr(0, i);
 		if (this->not_allowed_char(this->header_map["POST"].c_str()))
-			this->status = 400;
+			this->set_status(400);
+
 	}
-	if (this->method == 3)
+	if (this->get_method() == 3)
 	{
 		int i = 0;
 		std::string location1 = this->header_map["DELETE"].c_str();
@@ -133,20 +138,21 @@ void req::check_errors()
 			i++;
 		this->location = location1.substr(0, i);
 		if (this->not_allowed_char(this->header_map["DELETE"].c_str()))
-			this->status = 400;
+			this->set_status(400);
+
 	}
 	{
-	if (this->header_map["\rContent-Length"].size() > 0 && this->method == 2)
-		this->body_kind = 2;
+	if (this->header_map["\rContent-Length"].size() > 0 && this->get_method() == 2)
+		this->set_body_kind(2);
 		this->flag = 1;
 	}
-	if (this->header_map["\rTransfer-Encoding"].size() > 0 && this->method == 2)
+	if (this->header_map["\rTransfer-Encoding"].size() > 0 && this->get_method() == 2)
 	{
 		if (strcmp(this->header_map["\rTransfer-Encoding"].c_str(), "chunked\r") != 0)
-			this->status = 501;
+			this->set_status(501);
 		else
 		{
-			this->body_kind = 1;
+			this->set_body_kind(1);
 			this->flag = 1;
 		}
 	}
@@ -156,8 +162,5 @@ void req::check_errors()
 		this->flag = 1;
 	}
 	if (this->flag != 1)
-	{
-		std::cout << this->flag << std::endl;
-		this->error();
-	}
+		this->set_status(404);
 };

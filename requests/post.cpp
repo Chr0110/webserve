@@ -31,19 +31,19 @@ void req::post()
 	if (isDirectory(this->final_path))
 	{
 		if (this->final_path[this->final_path.size() - 1] != '/')
-			this->status = 301;
+			this->set_status(301);
 		else if (hasIndexFile(this->final_path))
 			send_to_cgi();
 		else
-			this->status = 403;
+			tthis->set_status(403);
 	}
 	else if (isfile(this->final_path))
 	{
 		if (this_file_cgi())
 			send_to_cgi();
 		else
-			this->status = 403;
+			this->set_status(403);
 	}
 	else
-		this->status = 404;
+		this->set_status(404);
 };

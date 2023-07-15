@@ -2,6 +2,7 @@
 
 int req::wait_for_zero(std::string body)
 {
+	std::cout << body << std::endl;
 	int i = body.size();
 	if (body[i - 1] == '\n' && body[i - 2] == '\r' && body[i - 3] == '\n' && body[i - 4] == '\r' && body[i - 5] == '0')
 		return 1;
@@ -24,7 +25,7 @@ int req::wait_for_size(std::string body)
 	return 0;
 };
 
-void	req::set_init()
+void	req::set_inittt()
 {
 	int k = 0;
 	if (this->check_rn(this->body))
@@ -34,18 +35,19 @@ void	req::set_init()
 			this->parse_header(this->body);
 			k = 1;
 			if (this->status != 200)
-				this->init = -1;
+				this->set_init(-1);
 		}
 	}
-	if (this->body_kind == 2 && this->init != -1)
+	if (this->get_body_kind()== 1 && this->init != -1)
 	{
+		usleep(200);
 		if(this->wait_for_zero(this->body))
-			this->init = 1;
+			this->set_init(1);
 	}
-	else if (this->body_kind == 1)
+	else if (this->get_body_kind() == 2)
 	{
 		if (this->wait_for_size(this->body))
-			this->init = 1;
+			this->set_init(1);
 	}
 };
 
@@ -95,7 +97,7 @@ int hexToDecimal(std::string& hexString) {
     return decimal;
 };
 
-void req::upload(std::fstream& file)
+void req:: upload(std::fstream& file)
 {
 	int i = 0;
 	std::string output;
@@ -108,7 +110,7 @@ void req::upload(std::fstream& file)
 		getline(file, output);
 		i++;
 	}
-	if (this->body_kind == 1)
+	if (this->get_body_kind() == 1)
 	{
 		int length = 1;
 		char c;
@@ -143,9 +145,9 @@ void req::upload(std::fstream& file)
 		for (size_t i = 0; i < this->last_body.size(); ++i)
 			filee << this->last_body[i];
 		filee.close();
-		this->status = 201;
+		this->set_status(201);
 	}
-	if (this->body_kind == 2)
+	if (this->get_body_kind()== 2)
 	{
 		try
 		{
@@ -162,7 +164,7 @@ void req::upload(std::fstream& file)
 					filee << this->last_body[i];
 				}
 			filee.close();
-			this->status = 201;
+			this->set_status(201);
 		}
 		catch(const std::exception& e)
 		{
