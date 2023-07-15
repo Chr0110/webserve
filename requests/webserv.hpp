@@ -32,14 +32,12 @@ class req
 		int status ;
 		int body_kind;
 		int init;
-		std::string		host;
-		size_t			port;
-		std::string		serverName;
-		size_t			bodySizeLimit;
-		std::string		defaultErrorPages;
-		myMap			locations;
-		std::string		path;
+		ws::ServerData		&server;
+
 	public:
+		req(ws::ServerData &s) : method(2), status(200), body_kind(1), init(0), server(s) {};
+		// req();
+		~req() {};
 		//setters
 		void set_method(int method){this->method = method;};
 		void set_status(int status){this->status = status;};
@@ -50,23 +48,13 @@ class req
 		int get_init(){return this->init;};
 		int get_method(){return this->method;};
 		int get_body_kind(){return this->body_kind;};
-		std::string get_host(){return this->host;};
-		std::string get_servername(){return this->serverName;};
-		std::string get_defaulterror(){return this->defaultErrorPages;};
-		std::string get_path(){return this->path;};
-		myMap get_locations(){myMap map; return map;};
-		size_t get_port(){return this->port;};
-		size_t get_bodysizelimit(){return this->bodySizeLimit;};
 		//#################################
-		req(void) : method(2), status(200), body_kind(1), init(0) {};
-		req(ws::ServerData &s);
-		~req() {};
 		void post();
 		void check_errors();
 		void parse_request_head(std::fstream& file, int *j);
 		void parse_header(std::string body);
 		void set_inittt();
-		void get_matched(char **av);
+		void get_matched();
 		void error();
 		void upload(std::fstream& file);
 		bool file_exists(const std::string& filePath);

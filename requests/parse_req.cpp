@@ -1,14 +1,4 @@
 #include "webserv.hpp"
-req::req(ws::ServerData &s) : method(2), status(200), body_kind(1), init(0)
-{
- 	this->host = s.getHost();
- 	this->port = s.getPort();
- 	this->serverName = s.getServerName();
- 	this->bodySizeLimit = s.getBodySizeLimit();
- 	this->defaultErrorPages = s.getDefaultErrorPages();
- 	this->locations = s.getLocations();
- 	this->path = s.getPath();
-}
 
 void req::error()
 {

@@ -2,7 +2,6 @@
 
 int req::wait_for_zero(std::string body)
 {
-	std::cout << body << std::endl;
 	int i = body.size();
 	if (body[i - 1] == '\n' && body[i - 2] == '\r' && body[i - 3] == '\n' && body[i - 4] == '\r' && body[i - 5] == '0')
 		return 1;
