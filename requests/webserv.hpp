@@ -67,6 +67,7 @@ class req
 		std::string extention;
 		std::string body;
 		std::string final_path;
+		std::string compare(std::string s);
 		int not_allowed_char(std::string uri);
 		int check_rn(std::string body);
 		int wait_for_zero(std::string body);

@@ -4,46 +4,36 @@
 #include "LocationData.hpp"
 #include "parseConfig.hpp"
 
-int compare(std::string s, std::string s1)
+std::string req::compare(std::string s)
 {
-	int j = 0;
-	while(s[j] != '/' && s[j])
-		j++;
-	std::string s2 = s1.substr(1);
-	if (strncmp(s.c_str(),s2.c_str(), j) == 0)
-		return 0;
-	return 1;
+	if (this->location.size() == 1)
+	{
+		return this->location;
+	}
+	int i = s.size();
+	if (i != 1)
+	{
+		int o = 0;
+		o = s.substr(0, i).compare(this->location.substr(0, i));
+		if (o == 0)
+		{
+			std::string path = this->location.substr(i);
+			return path;
+		}
+	}
+	return std::string();
 }
 
 void req::get_matched()
 {
 	const std::map<std::string, ws::LocationData>& locations = server.getLocations();
-
 	for (std::map<std::string, ws::LocationData>::const_iterator it2 = locations.begin(); it2 != locations.end(); ++it2)
 	{
-  		std::cout << "Location: " << it2->first << std::endl;
-
-		std::string path = this->location;
-		if (!compare(path, it2->first))
+		if (compare(it2->first).size() != 0)
 		{
-			int i = 0;
-			while (this->location[i] != '/' && this->location[i])
-				i++;
-			this->final_path = it2->second.getRoot() + this->location.substr(i);
+			this->final_path = it2->second.getRoot() + compare(it2->first);
 			std::cout << this->final_path << std::endl;
 		}
-		// std::cout << "\tRoot	   : " << it2->second.getRoot() << std::endl;
-		// std::cout << "\tAutoindex  : " << it2->second.getAutoindex() << std::endl;
-		// std::cout << "\tCgiGet	   : " << it2->second.getCgiGet() << std::endl;
-		// std::cout << "\tCgiPost	   : " << it2->second.getCgiPost() << std::endl;
-		// std::cout << "\tCgiDelete  : " << it2->second.getCgiDelete() << std::endl;
-		// std::cout << "\tDefaultPage: " << it2->second.getDefaultPage() << std::endl;
-	}
-	// std::cout << "dbf"<< std::endl;
-	if (this->final_path.size() == 0)
-	{
-		this->status = 404;
-		std::cout << "Not found\n";
 	}
 };
 int main(int ac, char **av)

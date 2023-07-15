@@ -69,7 +69,7 @@ void req::parse_header(std::string body)
 		}
 		while (body[j + 1] != '\r')
 		{
-			value.push_back(body[j + 2]);
+			value.push_back(body[j + 1]);
 			j++;
 		}
 		this->key = key;
