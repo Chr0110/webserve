@@ -22,6 +22,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <cmath>
+#include <sys/stat.h>
+#include <dirent.h>
 #include "ServerData.hpp"
 
 class req
@@ -49,15 +51,14 @@ class req
 		int get_method(){return this->method;};
 		int get_body_kind(){return this->body_kind;};
 		//#################################
+		ws::LocationData myLocation;
 		void post();
 		void check_errors();
-		void parse_request_head(std::fstream& file, int *j);
 		void parse_header(std::string body);
 		void set_inittt();
 		void get_matched();
 		void error();
 		void upload(std::fstream& file);
-		bool file_exists(const std::string& filePath);
 		std::string location;
 		std::map<std::string, std::string> header_map;
 		std::map<std::string, std::string> body_map;
@@ -68,12 +69,14 @@ class req
 		std::string body;
 		std::string final_path;
 		std::string compare(std::string s);
+		std::string generateName();
 		int not_allowed_char(std::string uri);
 		int check_rn(std::string body);
 		int wait_for_zero(std::string body);
 		int wait_for_size(std::string body);
 		int flag;
 		int delim;
+		int compaireFlag;
 };
 
 #endif

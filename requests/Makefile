@@ -1,6 +1,6 @@
 NAME = webserv
 
-SRC = main.cpp parse_req.cpp parse_req2.cpp
+SRC = main.cpp parse_req.cpp parse_req2.cpp post.cpp
 OBJ = $(SRC:.cpp=.o)
 
 CC = c++

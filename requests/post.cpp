@@ -1,49 +1,83 @@
 #include "webserv.hpp"
 
-bool isDirectory(const char* path) {
-    struct stat st;
-    if (stat(path, &st) == 0) {
-        return S_ISDIR(st.st_mode);
-    }
-    return false;
-};
+bool isDirectory(const std::string& path) {
+	struct stat buf;
+	stat(path, &buf);
+	return S_ISDIR(buf.st_mode);
+}
 
 bool hasIndexFile(const char* directoryPath) {
-    DIR* directory = opendir(directoryPath);
-    if (directory == NULL) {
-        std::cerr << "Failed to open directory: " << directoryPath << std::endl;
-        return false;
-    }
+	DIR* directory = opendir(directoryPath);
+	if (directory == NULL) {
+		std::cerr << "Failed to open directory: " << directoryPath << std::endl;
+		return false;
+	}
 
-    struct dirent* entry;
-    while ((entry = readdir(directory)) != NULL) {
-        if (strcmp(entry->d_name, "index.py") == 0 || strcmp(entry->d_name, "index.php"))
-            closedir(directory);
-            return true;
-    }
+	struct dirent* entry;
+	while ((entry = readdir(directory)) != NULL) {
+		if (strcmp(entry->d_name, "index.py") == 0 || strcmp(entry->d_name, "index.php") == 0) {
+			closedir(directory);
+			return true;
+		}
+	}
 
-    closedir(directory);
-    return false;
+	closedir(directory);
+	return false;
 };
 
 void req::post()
 {
-	if (isDirectory(this->final_path))
+	try
 	{
-		if (this->final_path[this->final_path.size() - 1] != '/')
-			this->set_status(301);
-		else if (hasIndexFile(this->final_path))
-			send_to_cgi();
-		else
-			tthis->set_status(403);
+		std::string newFolder = final_path.substr(1);
+		if (isDirectory(newFolder.c_str()))
+		{
+			printf("Hello from Directory\n");
+			if (this->final_path[this->final_path.size() - 1] != '/')
+			{
+				this->set_status(301);
+				return ;
+			}
+			else if (hasIndexFile(this->final_path.c_str()))
+			{
+				printf("Hello Dir\n");
+				//send_to_cgi();
+				return ;
+			}
+			else
+			{
+				this->set_status(403);
+				return;
+			}
+		}
+		else 
+		{
+			std::string file;
+			std::string ext;
+			int i = final_path.size() - 1;
+			while (i > 0)
+			{
+				if (final_path[i] == '/')
+					break;
+				i--;
+			}
+			file = final_path.substr(i);
+			i = 0;
+			while (file[i])
+			{
+				if (file[i] == '.')
+					break;
+				i++;
+			}
+			ext = file.substr(i + 1);
+			if (strcmp(ext.c_str(),"py") == 0 || strcmp(ext.c_str(),"php") == 0)
+				printf("m here\n");
+				//send_to_cgi
+		}
 	}
-	else if (isfile(this->final_path))
+	
+	catch(const std::exception& e)
 	{
-		if (this_file_cgi())
-			send_to_cgi();
-		else
-			this->set_status(403);
+		std::cerr << "" << '\n';
 	}
-	else
-		this->set_status(404);
 };

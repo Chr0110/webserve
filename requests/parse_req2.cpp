@@ -1,5 +1,68 @@
 #include "webserv.hpp"
 
+
+std::string req::compare(std::string s)
+{
+	if (this->location.size() == 1)
+		return this->location;
+	int i = s.size();
+	if (this->location[i] != '\0' && this->location[i] != '/')
+		return std::string();
+	if (i != 1)
+	{
+		int o = 0;
+		o = s.substr(0, i).compare(this->location.substr(0, i));
+		if (o == 0)
+		{
+			std::string path = this->location.substr(i);
+			this->compaireFlag = 1;
+			return path;
+		}
+	}
+	return std::string();
+}
+
+void req::get_matched()
+{
+
+	const std::map<std::string, ws::LocationData>& locations = server.getLocations();
+	for (std::map<std::string, ws::LocationData>::const_iterator it2 = locations.begin(); it2 != locations.end(); ++it2)
+	{
+		compare(it2->first).size();
+		if (this->compaireFlag == 1)
+		{
+			this->final_path = it2->second.getRoot() + compare(it2->first);
+			myLocation = it2->second;
+			return ;
+		}
+	}
+	if (this->final_path.size() == 0)
+	{
+		std::cout << "not found 404\n";
+	}
+};
+
+std::string req::generateName() {
+    const std::string vowels = "aeiou";
+    const std::string consonants = "bcdfghjklmnpqrstvwxyz";
+    std::string name;
+    
+    srand(time(0));  // Initialize random seed
+    
+    // Generate random name with a maximum size of 5 characters
+    int nameLength = rand() % 5 + 1;
+    
+    for (int i = 0; i < nameLength; ++i) {
+        if (i % 2 == 0) {  // Generate a vowel
+            name += vowels[rand() % vowels.size()];
+        } else {  // Generate a consonant
+            name += consonants[rand() % consonants.size()];
+        }
+    }
+    
+    return name;
+};
+
 int req::wait_for_zero(std::string body)
 {
 	int i = body.size();
@@ -70,30 +133,30 @@ int hexToDigit(const std::string& hexChar) {
 };
 
 int hexToDecimal(std::string& hexString) {
-    int decimal = 0;
-    int power = 0;
+	int decimal = 0;
+	int power = 0;
 
-    for (int i = hexString.length() - 2; i >= 0; i--) {
-        char currentChar = hexString[i];
-    	int digitValue;
+	for (int i = hexString.length() - 2; i >= 0; i--) {
+		char currentChar = hexString[i];
+		int digitValue;
 
-        if (currentChar >= '0' && currentChar <= '9') {
-            digitValue = currentChar - '0';
-        }
-        else if (currentChar >= 'A' && currentChar <= 'F') {
-            digitValue = currentChar - 'A' + 10;
-        }
-        else if (currentChar >= 'a' && currentChar <= 'f') {
-            digitValue = currentChar - 'a' + 10;
-        }
-        else {
-            std::cerr << "Invalid hexadecimal digit: " << currentChar << std::endl;
-            return 0;
-        }
-        decimal += digitValue * static_cast<int>(std::pow(16, power));
-        power++;
-    }
-    return decimal;
+		if (currentChar >= '0' && currentChar <= '9') {
+			digitValue = currentChar - '0';
+		}
+		else if (currentChar >= 'A' && currentChar <= 'F') {
+			digitValue = currentChar - 'A' + 10;
+		}
+		else if (currentChar >= 'a' && currentChar <= 'f') {
+			digitValue = currentChar - 'a' + 10;
+		}
+		else {
+			std::cerr << "Invalid hexadecimal digit: " << currentChar << std::endl;
+			return 0;
+		}
+		decimal += digitValue * static_cast<int>(std::pow(16, power));
+		power++;
+	}
+	return decimal;
 };
 
 void req:: upload(std::fstream& file)
@@ -115,7 +178,7 @@ void req:: upload(std::fstream& file)
 		char c;
 		std::string output;
 		std::ofstream filee;
-		std::string kk = "file.";
+		std::string kk = this->generateName() + ".";
 		kk += this->extention;
 		filee.open("../uploads/" + kk);
 		while(length != 0)
@@ -150,9 +213,10 @@ void req:: upload(std::fstream& file)
 	{
 		try
 		{
+			getline(file, output);
 			size_t length = stoi(this->header_map["\rContent-Length"]);
 			std::ofstream filee;
-			std::string kk = "file.";
+			std::string kk = this->generateName() + ".";
 			kk += this->extention;
 			filee.open("../uploads/" + kk);
 			char c;

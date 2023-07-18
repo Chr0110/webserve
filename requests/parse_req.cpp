@@ -69,7 +69,7 @@ void req::parse_header(std::string body)
 		}
 		while (body[j + 1] != '\r')
 		{
-			value.push_back(body[j + 1]);
+			value.push_back(body[j + 2]);
 			j++;
 		}
 		this->key = key;
@@ -105,41 +105,49 @@ void req::check_errors()
 		std::string location1 = this->header_map["GET"].c_str();
 		while (location1[i] != ' ')
 			i++;
-		this->location = location1.substr(0, i);
+		this->location = "/" + location1.substr(0, i);
 		if (this->not_allowed_char(this->header_map["GET"].c_str()))
+		{
 			this->set_status(400);
+		}
 	}
-	if (this->get_method() == 2)
+	else if (this->get_method() == 2)
 	{
 		int i = 0;
 		std::string location1 = this->header_map["POST"].c_str();
 		while (location1[i] != ' ')
 			i++;
-		this->location = location1.substr(0, i);
+		this->location = "/" + location1.substr(0, i);
 		if (this->not_allowed_char(this->header_map["POST"].c_str()))
+		{
 			this->set_status(400);
+		}
 
 	}
-	if (this->get_method() == 3)
+	else if (this->get_method() == 3)
 	{
 		int i = 0;
 		std::string location1 = this->header_map["DELETE"].c_str();
 		while (location1[i] != ' ')
 			i++;
-		this->location = location1.substr(0, i);
+		this->location = "/" + location1.substr(0, i);
 		if (this->not_allowed_char(this->header_map["DELETE"].c_str()))
+		{
 			this->set_status(400);
 
+		}
 	}
-	{
 	if (this->header_map["\rContent-Length"].size() > 0 && this->get_method() == 2)
+	{
 		this->set_body_kind(2);
 		this->flag = 1;
 	}
-	if (this->header_map["\rTransfer-Encoding"].size() > 0 && this->get_method() == 2)
+	else if (this->header_map["\rTransfer-Encoding"].size() > 0 && this->get_method() == 2)
 	{
 		if (strcmp(this->header_map["\rTransfer-Encoding"].c_str(), "chunked\r") != 0)
+		{
 			this->set_status(501);
+		}
 		else
 		{
 			this->set_body_kind(1);
@@ -152,5 +160,7 @@ void req::check_errors()
 		this->flag = 1;
 	}
 	if (this->flag != 1)
+	{
 		this->set_status(404);
+	}
 };

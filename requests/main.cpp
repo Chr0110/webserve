@@ -4,38 +4,6 @@
 #include "LocationData.hpp"
 #include "parseConfig.hpp"
 
-std::string req::compare(std::string s)
-{
-	if (this->location.size() == 1)
-	{
-		return this->location;
-	}
-	int i = s.size();
-	if (i != 1)
-	{
-		int o = 0;
-		o = s.substr(0, i).compare(this->location.substr(0, i));
-		if (o == 0)
-		{
-			std::string path = this->location.substr(i);
-			return path;
-		}
-	}
-	return std::string();
-}
-
-void req::get_matched()
-{
-	const std::map<std::string, ws::LocationData>& locations = server.getLocations();
-	for (std::map<std::string, ws::LocationData>::const_iterator it2 = locations.begin(); it2 != locations.end(); ++it2)
-	{
-		if (compare(it2->first).size() != 0)
-		{
-			this->final_path = it2->second.getRoot() + compare(it2->first);
-			std::cout << this->final_path << std::endl;
-		}
-	}
-};
 int main(int ac, char **av)
 {
 	if (ac == 2)
@@ -45,7 +13,7 @@ int main(int ac, char **av)
 		ws::ServerData server;
 		std::vector<ws::ServerData> servers;
 		servers = ws::parseConfigFile(av[1]);
-		req rq = req(servers[1]);
+		req rq = req(servers[0]);
 		rq.set_status(200);
 
 		/////////////////////////////////////////////////////////////////////////////////////////
@@ -99,12 +67,11 @@ int main(int ac, char **av)
 			break;
 		}
 		rq.get_matched();
-		if (rq.get_method() == 2 && rq.get_status() == 200)
+		std::cout << rq.final_path << std::endl;
+		if (rq.get_method() == 2 && rq.get_status() == 200 && rq.myLocation.getCgiPost())
 		{
-			//if (check_upload_support(this->final_path))
-				rq.upload(file);
-			//else
-			//	rq.post();
+			//rq.upload(file);
+			rq.post();
 		}
 		else
 			std::cout << rq.get_status() << std::endl;
