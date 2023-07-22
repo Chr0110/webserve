@@ -15,9 +15,7 @@ int main(int ac, char **av)
 		servers = ws::parseConfigFile(av[1]);
 		req rq = req(servers[0]);
 		rq.set_status(200);
-
-		/////////////////////////////////////////////////////////////////////////////////////////
-		std::fstream file("request.txt",  std::ios::in | std::ios::out | std::ios::trunc);
+		std::ofstream filee;
 		struct sockaddr_in address;
 		int addrlen = sizeof(address);
 		std::string hello = "HTTP/1.1 200 OK\nContent-Type: text/plain\nContent-Length: 12\n\nHello world!";
@@ -50,31 +48,25 @@ int main(int ac, char **av)
 				perror("In accept");
 				exit(EXIT_FAILURE);
 			}
-			char buffer[1024] = {0};
+			char buffer[30000] = {0};
 			valread = 1;
-			std::string b;
 			while (valread > 0)
 			{
-				valread = read(new_socket, buffer, 1024);
+				valread = read(new_socket, buffer, 30000);
 				for (int i = 0; i < valread; ++i)
 					rq.body.push_back(buffer[i]);
 				rq.set_inittt();
+				std::cout << rq.get_status() << std::endl;
+				if (rq.get_method() == 2 && rq.get_body_kind() == 1)
+					rq.upload1(filee);
+				else if (rq.get_method() == 2 && rq.get_body_kind() == 2)
+					rq.upload2(filee);
 				if (rq.get_init() == 1)
 					break;
 			}
-			if (file.is_open())
-				file.write(&rq.body[0], rq.body.size());
 			break;
 		}
 		rq.get_matched();
-		std::cout << rq.final_path << std::endl;
-		if (rq.get_method() == 2 && rq.get_status() == 200 && rq.myLocation.getCgiPost())
-		{
-			//rq.upload(file);
-			rq.post();
-		}
-		else
-			std::cout << rq.get_status() << std::endl;
 	}
 	else
 		std::cout << "Error: could not open file" << std::endl;

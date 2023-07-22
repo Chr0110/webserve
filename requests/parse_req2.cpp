@@ -4,7 +4,10 @@
 std::string req::compare(std::string s)
 {
 	if (this->location.size() == 1)
+	{
+		this->compaireFlag = 1;
 		return this->location;
+	}
 	int i = s.size();
 	if (this->location[i] != '\0' && this->location[i] != '/')
 		return std::string();
@@ -20,7 +23,7 @@ std::string req::compare(std::string s)
 		}
 	}
 	return std::string();
-}
+};
 
 void req::get_matched()
 {
@@ -29,15 +32,20 @@ void req::get_matched()
 	for (std::map<std::string, ws::LocationData>::const_iterator it2 = locations.begin(); it2 != locations.end(); ++it2)
 	{
 		compare(it2->first).size();
+		std::string root = it2->second.getRoot();
 		if (this->compaireFlag == 1)
 		{
-			this->final_path = it2->second.getRoot() + compare(it2->first);
+			if (root[root.size() - 1] == '/')
+				root = root.substr(0, root.size() - 1);
+			this->final_path = root + compare(it2->first);
 			myLocation = it2->second;
+			// std::cout << final_path << std::endl;
 			return ;
 		}
 	}
 	if (this->final_path.size() == 0)
 	{
+		std::cout << location << std::endl;
 		std::cout << "not found 404\n";
 	}
 };
@@ -47,15 +55,13 @@ std::string req::generateName() {
     const std::string consonants = "bcdfghjklmnpqrstvwxyz";
     std::string name;
     
-    srand(time(0));  // Initialize random seed
-    
-    // Generate random name with a maximum size of 5 characters
+    srand(time(0)); 
     int nameLength = rand() % 5 + 1;
     
     for (int i = 0; i < nameLength; ++i) {
-        if (i % 2 == 0) {  // Generate a vowel
+        if (i % 2 == 0) {
             name += vowels[rand() % vowels.size()];
-        } else {  // Generate a consonant
+        } else { 
             name += consonants[rand() % consonants.size()];
         }
     }
@@ -87,29 +93,51 @@ int req::wait_for_size(std::string body)
 	return 0;
 };
 
+
+int req::check_rn2()
+{
+	int j = 0;
+	while (body[j])
+	{
+		if(body[j] == '\r' && body[j + 1] == '\n' && body[j + 2] == '\r' && body[j + 3] == '\n')
+			return 1;
+		j++;
+	}
+	return 0;
+}
 void	req::set_inittt()
 {
-	int k = 0;
-	if (this->check_rn(this->body))
+	if (flag2 == 0)
 	{
-		if (k == 0)
+		if (check_rn(body))
 		{
-			this->parse_header(this->body);
-			k = 1;
-			if (this->status != 200)
-				this->set_init(-1);
+			parse_header(body);
+			stopRn += 4;
+			flag2 = 1;
+			if (status != 200)
+				set_init(-1);
 		}
 	}
-	if (this->get_body_kind()== 1 && this->init != -1)
+	if (get_body_kind()== 1 && init != -1 && get_method() == 2)
 	{
 		usleep(200);
-		if(this->wait_for_zero(this->body))
-			this->set_init(1);
+		if(wait_for_zero(body))
+			set_init(1);
 	}
-	else if (this->get_body_kind() == 2)
+	else if (get_body_kind() == 2 && get_method() == 2)
 	{
-		if (this->wait_for_size(this->body))
-			this->set_init(1);
+		if (wait_for_size(body))
+			set_init(1);
+	}
+	if ((init != -1 && get_method() == 1))
+	{
+		if (check_rn2())
+			set_init(1);
+	}
+	else if ((init != -1 && this->get_method() == 3))
+	{
+		if (check_rn2())
+			set_init(1);
 	}
 };
 
@@ -120,6 +148,7 @@ int the_end(std::string line)
 		return 1;
 	return 0;
 };
+
 int hexToDigit(const std::string& hexChar) {
 	if (hexChar >= "0" && hexChar <= "9") {
 		return hexChar[0] - '0';
@@ -132,106 +161,91 @@ int hexToDigit(const std::string& hexChar) {
 	return -1;
 };
 
-int hexToDecimal(std::string& hexString) {
-	int decimal = 0;
-	int power = 0;
+int req::hexToDecimal(const std::string& hexStr) {
 
-	for (int i = hexString.length() - 2; i >= 0; i--) {
-		char currentChar = hexString[i];
-		int digitValue;
+	if (!strcmp(hexStr.c_str(), "0\r\n\r\n"))
+		return (0);
+    int decimalValue = 0;
+    int base = 1;
 
-		if (currentChar >= '0' && currentChar <= '9') {
-			digitValue = currentChar - '0';
-		}
-		else if (currentChar >= 'A' && currentChar <= 'F') {
-			digitValue = currentChar - 'A' + 10;
-		}
-		else if (currentChar >= 'a' && currentChar <= 'f') {
-			digitValue = currentChar - 'a' + 10;
-		}
-		else {
-			std::cerr << "Invalid hexadecimal digit: " << currentChar << std::endl;
-			return 0;
-		}
-		decimal += digitValue * static_cast<int>(std::pow(16, power));
-		power++;
-	}
-	return decimal;
+    for (int i = hexStr.length() - 1; i >= 0; i--) {
+        char digit = hexStr[i];
+
+        int digitValue;
+        if (digit >= '0' && digit <= '9') {
+            digitValue = digit - '0';
+        } else if (digit >= 'A' && digit <= 'F') {
+            digitValue = digit - 'A' + 10;
+        } else if (digit >= 'a' && digit <= 'f') {
+            digitValue = digit - 'a' + 10;
+        } else {
+            return 0;
+        }
+        decimalValue += digitValue * base;
+        base *= 16;
+    }
+    return decimalValue;
 };
 
-void req:: upload(std::fstream& file)
+
+std::string req::to_rn(std::string body)
 {
 	int i = 0;
-	std::string output;
-	std::string body;
-	if (!file.is_open())
-		this->error();
-	file.seekg(0);
-	while(i < (int)this->header_map.size())
+	std::string hexa;
+	while (body[i] != '\r' && body[i + 1] != '\n')
 	{
-		getline(file, output);
+		hexa.push_back(body[i]);
 		i++;
 	}
-	if (this->get_body_kind() == 1)
+	return hexa;
+};
+
+void req::upload1(std::ofstream &filee)
+{
+	int tmp_stop_rn, chunk_size, x;
+	int i = 0;
+	if (file_cr == 0)
 	{
-		int length = 1;
-		char c;
-		std::string output;
-		std::ofstream filee;
-		std::string kk = this->generateName() + ".";
-		kk += this->extention;
-		filee.open("../uploads/" + kk);
-		while(length != 0)
-		{
-			try
-			{
-				getline(file, output);
-				int length = hexToDecimal(output);
-				if (length == 0)
-					break;
-				for(int i = 0; i < length; i++)
-				{
-					file.get(c);
-					this->last_body.push_back(c);
-				}
-				file.get(c);
-				file.get(c);
-			}
-			catch(const std::exception& e)
-			{
-				std::cerr << "" << '\n';
-			}
-			
-		}
-		file.close();
-		for (size_t i = 0; i < this->last_body.size(); ++i)
-			filee << this->last_body[i];
-		filee.close();
-		this->set_status(201);
+		filee.open("../uploads/" + generateName() + "." + extention);
+		file_cr++;
 	}
-	if (this->get_body_kind()== 2)
+	tmp_stop_rn = stopRn;
+	while (true) {
+		std::string hexa = to_rn(&body[stopRn]);
+		x = stopRn;
+		tmp_stop_rn += hexa.size() + 2;
+		chunk_size = hexToDecimal(hexa);
+		for (i = 0; i < chunk_size && (tmp_stop_rn + i) < (int)body.size();) {
+			i++;
+		}
+		if (i != chunk_size) {
+			body = body.substr(x, body.size()-x);
+			stopRn = 0;
+			break;
+		}
+		for (i = 0; i < chunk_size && (tmp_stop_rn + i) < (int)body.size(); i++) {
+			filee << body[tmp_stop_rn + i];
+		}
+		if (!chunk_size) {
+			break;
+		}
+		tmp_stop_rn += chunk_size + 2;
+		stopRn = tmp_stop_rn;
+	}
+	return ;
+};
+
+void req::upload2(std::ofstream &filee)
+{
+	if (file_cr == 0)
 	{
-		try
-		{
-			getline(file, output);
-			size_t length = stoi(this->header_map["\rContent-Length"]);
-			std::ofstream filee;
-			std::string kk = this->generateName() + ".";
-			kk += this->extention;
-			filee.open("../uploads/" + kk);
-			char c;
-			while (file.get(c))
-				this->last_body.push_back(c);
-			file.close();
-			for (size_t i = 0; i < length; ++i) {
-					filee << this->last_body[i];
-				}
-			filee.close();
-			this->set_status(201);
-		}
-		catch(const std::exception& e)
-		{
-			std::cerr << "" << '\n';
-		}
+		filee.open("../uploads/" + generateName() + "." + extention);
+		file_cr++;
+	}
+	while ((size_t)stopRn != body.size())
+	{
+		filee << body[stopRn];
+		last_body.push_back(body[stopRn]);
+		stopRn++;
 	}
 };

@@ -24,6 +24,7 @@
 #include <cmath>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <fcntl.h>
 #include "ServerData.hpp"
 
 class req
@@ -38,7 +39,6 @@ class req
 
 	public:
 		req(ws::ServerData &s) : method(2), status(200), body_kind(1), init(0), server(s) {};
-		// req();
 		~req() {};
 		//setters
 		void set_method(int method){this->method = method;};
@@ -50,6 +50,7 @@ class req
 		int get_init(){return this->init;};
 		int get_method(){return this->method;};
 		int get_body_kind(){return this->body_kind;};
+		int hexToDecimal(const std::string& hexStr);
 		//#################################
 		ws::LocationData myLocation;
 		void post();
@@ -58,7 +59,10 @@ class req
 		void set_inittt();
 		void get_matched();
 		void error();
-		void upload(std::fstream& file);
+		void upload();
+		void upload1(std::ofstream &filee);
+		void upload2(std::ofstream &filee);
+		std::string to_rn(std::string body);
 		std::string location;
 		std::map<std::string, std::string> header_map;
 		std::map<std::string, std::string> body_map;
@@ -74,9 +78,14 @@ class req
 		int check_rn(std::string body);
 		int wait_for_zero(std::string body);
 		int wait_for_size(std::string body);
+		int check_rn2();
 		int flag;
 		int delim;
 		int compaireFlag;
+		int flag2;
+		int stopRn;
+		int file_cr;
+		int notBoth;
 };
 
 #endif

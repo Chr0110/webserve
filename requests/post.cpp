@@ -1,9 +1,12 @@
 #include "webserv.hpp"
 
 bool isDirectory(const std::string& path) {
-	struct stat buf;
-	stat(path, &buf);
-	return S_ISDIR(buf.st_mode);
+    struct stat fileStat;
+    if (stat(path.c_str(), &fileStat) == -1) {
+        return false;
+    }
+
+    return S_ISDIR(fileStat.st_mode);
 }
 
 bool hasIndexFile(const char* directoryPath) {
@@ -29,10 +32,9 @@ void req::post()
 {
 	try
 	{
-		std::string newFolder = final_path.substr(1);
-		if (isDirectory(newFolder.c_str()))
+		if (isDirectory(final_path.c_str()))
 		{
-			printf("Hello from Directory\n");
+			std::cout << final_path[this->final_path.size()] << std::endl;
 			if (this->final_path[this->final_path.size() - 1] != '/')
 			{
 				this->set_status(301);
@@ -40,8 +42,7 @@ void req::post()
 			}
 			else if (hasIndexFile(this->final_path.c_str()))
 			{
-				printf("Hello Dir\n");
-				//send_to_cgi();
+				printf("ready to send to cgi\n");
 				return ;
 			}
 			else
@@ -71,11 +72,17 @@ void req::post()
 			}
 			ext = file.substr(i + 1);
 			if (strcmp(ext.c_str(),"py") == 0 || strcmp(ext.c_str(),"php") == 0)
-				printf("m here\n");
+			{
+				printf("ready to send to cgi\n");
 				//send_to_cgi
+			}
+			else
+			{
+				status = 403;
+				printf("error 403\n");
+			}
 		}
 	}
-	
 	catch(const std::exception& e)
 	{
 		std::cerr << "" << '\n';
