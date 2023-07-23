@@ -56,7 +56,6 @@ int main(int ac, char **av)
 				for (int i = 0; i < valread; ++i)
 					rq.body.push_back(buffer[i]);
 				rq.set_inittt();
-				std::cout << rq.get_status() << std::endl;
 				if (rq.get_method() == 2 && rq.get_body_kind() == 1)
 					rq.upload1(filee);
 				else if (rq.get_method() == 2 && rq.get_body_kind() == 2)

@@ -239,6 +239,7 @@ void req::upload2(std::ofstream &filee)
 {
 	if (file_cr == 0)
 	{
+		printf("m here\n");
 		filee.open("../uploads/" + generateName() + "." + extention);
 		file_cr++;
 	}
