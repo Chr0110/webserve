@@ -230,6 +230,7 @@ void req::upload1(std::ofstream &filee)
 			break;
 		}
 		tmp_stop_rn += chunk_size + 2;
+		std::cout << tmp_stop_rn << std::endl;
 		stopRn = tmp_stop_rn;
 	}
 	return ;
